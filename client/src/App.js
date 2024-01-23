@@ -195,7 +195,8 @@ const handleCloseModal = async () => {
 
   // Use PayPal SDK to handle payment
   const paypalScript = document.createElement('script');
-  paypalScript.src = `https://www.paypal.com/sdk/js?client-id=Ae4yN7YaTyetmQIWanu2GQax0IAwJulSm2jze42lK0aDZRckVVUv35BBzWLE7RhMdAzHar2b2XzyiY-8&currency=CAD`;
+  //paypalScript.src = `https://www.paypal.com/sdk/js?client-id=Ae4yN7YaTyetmQIWanu2GQax0IAwJulSm2jze42lK0aDZRckVVUv35BBzWLE7RhMdAzHar2b2XzyiY-8&currency=CAD`;
+  paypalScript.src = `https://www.paypal.com/sdk/js?client-id=Ae4yN7YaTyetmQIWanu2GQax0IAwJulSm2jze42lK0aDZRckVVUv35BBzWLE7RhMdAzHar2b2XzyiY-8&buyer-country=CA&currency=CAD`;
   paypalScript.async = true;
   paypalScript.onload = () => {
     handlePayPalPayment();
