@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Badge, Dropdown, Modal, Alert } from 'react-bootstrap';
 import './App.css';
 import ReactDOM from 'react-dom';
+import { calculateTotalWithFee } from './utils';
 
 function App() {
   const [tables, setTables] = useState(Array.from({ length: 30 }, () => ({ reservations: [], capacity: 8 })));
@@ -15,7 +16,13 @@ function App() {
   const [totalTicketPrice, setTotalTicketPrice] = useState(0);
   const [purchaseTimeout, setPurchaseTimeout] = useState(null);
 
-
+  const [remainingTime, setRemainingTime] = useState(5 * 60); // 5 minutes in seconds
+  const [fee, setFee] = useState(0);
+  const [feePercentage, setFeePercentage] = useState(6); // Set your desired fee percentage here
+	// Initialize newTotalTicketPrice state
+  const [newTotalTicketPrice, setNewTotalTicketPrice] = useState(0);
+  
+  
   const ticketPrices = {
     standard: 100,
     VIP: 120,
@@ -25,6 +32,21 @@ function App() {
 
 
 
+  const handleTicketTypeChange = (type, index) => {
+    const updatedTicketTypes = [...selectedTicketTypes];
+    updatedTicketTypes[index] = type;
+    setSelectedTicketTypes(updatedTicketTypes);
+
+    const newTotalTicketPrice = updatedTicketTypes.reduce((total, t) => total + 5 + ticketPrices[t], 0);
+    setTotalTicketPrice(newTotalTicketPrice);
+
+    clearTimeout(purchaseTimeout);
+    const timeoutId = setTimeout(() => {
+      handleCloseModal();
+      alert('Purchase session expired. Please try again.');
+    }, 5 * 60 * 1000);
+    setPurchaseTimeout(timeoutId);
+  };
 
   const handleAddReservation = () => {
     const table = tables[selectedTable - 1];
@@ -32,7 +54,8 @@ function App() {
     if (selectedSpots <= table.capacity && selectedSpots <= 8) {
       setShowModal(true);
       setShowTicketFields(true);
-      setTotalTicketPrice(selectedSpots * ticketPrices[selectedTicketTypes[0]]);
+      //setTotalTicketPrice(selectedSpots * ticketPrices[selectedTicketTypes[0]]);
+
     } else if (selectedSpots > 8) {
       alert("You can't reserve more than 8 spots for a single table.");
     } else {
@@ -223,21 +246,7 @@ const handleCloseModal = async () => {
 
 
 
-  const handleTicketTypeChange = (type, index) => {
-    const updatedTicketTypes = [...selectedTicketTypes];
-    updatedTicketTypes[index] = type;
-    setSelectedTicketTypes(updatedTicketTypes);
 
-    const newTotalTicketPrice = updatedTicketTypes.reduce((total, t) => total + ticketPrices[t], 0);
-    setTotalTicketPrice(newTotalTicketPrice);
-
-    clearTimeout(purchaseTimeout);
-    const timeoutId = setTimeout(() => {
-      handleCloseModal();
-      alert('Purchase session expired. Please try again.');
-    }, 5 * 60 * 1000);
-    setPurchaseTimeout(timeoutId);
-  };
 
   const calculateTableColor = (table) => {
     if (table.capacity === 0) {
@@ -254,34 +263,47 @@ const handleCloseModal = async () => {
   };
 
 
+// ... (previous code)
 
+useEffect(() => {
 
-	useEffect(() => {
-	  const newTotalTicketPrice = selectedTicketTypes.reduce((total, type) => total + ticketPrices[type], 0);
-	  setTotalTicketPrice(newTotalTicketPrice);
+  // Calculate the total ticket price including the fee using the utility function
+  const { totalWithFee, feeAmount } = calculateTotalWithFee(selectedTicketTypes, ticketPrices, feePercentage);
 
-	  const timeoutId = setTimeout(() => {
-		handleCloseModal();
-		alert('Purchase session expired. Please try again.');
-	  }, 5 * 60 * 1000);
+  // Set the total ticket price
+  setTotalTicketPrice(totalWithFee);
 
-	  setPurchaseTimeout(timeoutId);
+  setFee(feeAmount);
+  
+  const timeoutId = setTimeout(() => {
+    handleCloseModal();
+    alert('Purchase session expired. Please try again.');
+  }, remainingTime * 1000);
 
-	  return () => {
-		clearTimeout(timeoutId);
-	  };
-	}, [selectedTicketTypes, handleCloseModal, ticketPrices]);
+  setPurchaseTimeout(timeoutId);
 
+  // Update the remaining time every second
+  const intervalId = setInterval(() => {
+    setRemainingTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+  }, 1000);
 
+  return () => {
+    clearTimeout(timeoutId);
+    clearInterval(intervalId);
+  };
+}, [selectedTicketTypes, handleCloseModal, ticketPrices, remainingTime, feePercentage]);
 
-  return (
-    <Container className="mt-3">
-      <div className="rectangle-layout">
-        <Form>
-          <h5 className="">Select Table:</h5>
-          <Dropdown className="mb-3">
+return (
+  <Container className="mt-3">
+    {/* Main container for the component */}
+    <div className="rectangle-layout">
+      <Form>
+        {/* Select Table section */}
+        <div className="select-table-section">
+          <h5 className="mb-3">Select Table:</h5>
+          <Dropdown>
             <Dropdown.Toggle variant="primary" id="dropdown-basic">
-              Select Table: {selectedTable}
+              Table {selectedTable}
             </Dropdown.Toggle>
             <Dropdown.Menu>
               {Array.from({ length: 30 }).map((_, index) => (
@@ -291,7 +313,10 @@ const handleCloseModal = async () => {
               ))}
             </Dropdown.Menu>
           </Dropdown>
-          <h5 className="">Enter number of seats:</h5>
+        </div>
+        {/* Enter number of seats section */}
+        <div className="enter-seats-section">
+          <h5 className="mb-3">Enter number of seats:</h5>
           <Form.Group controlId="selectedSpots">
             <Form.Control
               type="number"
@@ -300,94 +325,113 @@ const handleCloseModal = async () => {
               onChange={(e) => setSelectedSpots(Math.max(1, parseInt(e.target.value, 10)))}
             />
           </Form.Group>
-          <Button variant="primary" onClick={handleAddReservation} className="rectangle-button">
-            Add Reservation
-          </Button>
-        </Form>
-        <div className="task-list">
-          {tables.map((table, tableIndex) => (
-            <div key={tableIndex} className={`rectangle-button task-item ${calculateTableColor(table)}`}>
-              <div>
-                <strong>Table {tableIndex + 1}</strong>
-              </div>
-              <div>
-                {table.reservations.map((reservation, index) => (
-                  <Badge key={index} pill variant="info" className="mr-1">
-                    {reservation.name} ({reservation.spots} spots)
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          ))}
         </div>
-      </div>
-
-      <Modal show={showModal} onHide={handleCloseModal} dialogClassName="custom-modal-width">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            Select Tickets - Table {selectedTable} ({getAvailableSeats(tables[selectedTable - 1])} available seats)
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {showTicketFields && (
-            <Form>
-              <Alert variant="warning">Note: Tickets are non-refundable.</Alert>
-              <Form.Group controlId="buyerName">
-                <Form.Label>Name</Form.Label>
-                <Form.Control type="text" placeholder="Enter your name" />
-              </Form.Group>
-              <Form.Group controlId="buyerSurname">
-                <Form.Label>Surname</Form.Label>
-                <Form.Control type="text" placeholder="Enter your surname" />
-              </Form.Group>
-              {[...Array(selectedSpots)].map((_, index) => (
-                <Form.Group key={index} controlId={`ticketType-${index + 1}`}>
-                  <Form.Label>{`Ticket Type for Seat ${index + 1}`}</Form.Label>
-                  <div className="d-flex align-items-center">
-                    <span className="mr-2">{`Price: $${ticketPrices[selectedTicketTypes[index]]}`}</span>
-                    <Form.Control
-                      as="select"
-                      value={selectedTicketTypes[index]}
-                      onChange={(e) => handleTicketTypeChange(e.target.value, index)}
-                    >
-                      <option value="standard">Standard ($100)</option>
-                      <option value="VIP">VIP ($120)</option>
-                      <option value="student">Student ($85)</option>
-                      <option value="kids">Kids ($60)</option>
-                    </Form.Control>
-                  </div>
-                </Form.Group>
+        {/* Button to add reservation */}
+        <Button variant="primary" onClick={handleAddReservation} className="rectangle-button mb-3">
+          Add Reservation
+        </Button>
+      </Form>
+      {/* Task list */}
+      <div className="task-list">
+        {tables.map((table, tableIndex) => (
+          <div key={tableIndex} className={`rectangle-button task-item ${calculateTableColor(table)}`}>
+            <div>
+              <strong>Table {tableIndex + 1}</strong>
+            </div>
+            <div>
+              {table.reservations.map((reservation, index) => (
+                <Badge key={index} pill variant="info" className="mr-1">
+                  {reservation.name} ({reservation.spots} spots)
+                </Badge>
               ))}
-              <div className="mt-3">
-                <strong>Notes:</strong>
-                <ul>
-                  <li>Tickets are non-refundable.</li>
-                  <li>Total Ticket Price: ${totalTicketPrice}</li>
-                </ul>
-              </div>
-            </Form>
-          )}
-        <div id="paypal-button-container"></div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Close
-          </Button>
-          <Button variant="success" onClick={handleCloseModal}>
-            Purchase
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      
-      <div className="rectangle-layout">
-        <div id="paypal-button-container"></div>
+            </div>
+          </div>
+        ))}
       </div>
-      
-      
-      
-      
-    </Container>
-  );
+    </div>
+    {/* Reservation modal */}
+    <Modal show={showModal} onHide={handleCloseModal} dialogClassName="custom-modal-width">
+      <Modal.Header closeButton>
+        <Modal.Title>
+          Select Tickets - Table {selectedTable} ({getAvailableSeats(tables[selectedTable - 1])} available seats)
+        </Modal.Title>
+      </Modal.Header>
+      {/* Modal body */}
+      <Modal.Body>
+        {showTicketFields && (
+          <Form>
+            {/* Alert */}
+            <Alert variant="warning">Note: Tickets are non-refundable.</Alert>
+            {/* Buyer's name input */}
+            <Form.Group controlId="buyerName">
+              <Form.Label>Name</Form.Label>
+              <Form.Control type="text" placeholder="Enter your name" />
+            </Form.Group>
+            {/* Buyer's surname input */}
+            <Form.Group controlId="buyerSurname">
+              <Form.Label>Surname</Form.Label>
+              <Form.Control type="text" placeholder="Enter your surname" />
+            </Form.Group>
+            {/* Ticket type selection for each seat */}
+            {[...Array(selectedSpots)].map((_, index) => (
+              <Form.Group key={index} controlId={`ticketType-${index + 1}`}>
+                <Form.Label>{`Ticket Type for Seat ${index + 1}`}</Form.Label>
+                <div className="d-flex align-items-center">
+                  <span className="mr-2">{`Price: $${ticketPrices[selectedTicketTypes[index]]}`}</span>
+                  {/* Dropdown for selecting ticket type */}
+                  <Form.Control
+                    as="select"
+                    value={selectedTicketTypes[index]}
+                    onChange={(e) => handleTicketTypeChange(e.target.value, index)}
+                  >
+                    {/* Options for ticket types */}
+                    <option value="standard">Standard ($100)</option>
+                    <option value="VIP">VIP ($120)</option>
+                    <option value="student">Student ($85)</option>
+                    <option value="kids">Kids ($60)</option>
+                  </Form.Control>
+                </div>
+              </Form.Group>
+            ))}
+            {/* Notes section */}
+            <div className="mt-3">
+              <strong>Notes:</strong>
+              <ul>
+                <li>Fee (6%): ${totalTicketPrice}</li>
+                <li>Total Ticket Price + Fee: ${totalTicketPrice}</li>
+              </ul>
+            </div>
+          </Form>
+        )}
+        {/* PayPal button container */}
+        <div id="paypal-button-container"></div>
+      </Modal.Body>
+      {/* Modal footer */}
+      <Modal.Footer>
+        {/* Close button */}
+        <Button variant="secondary" onClick={handleCloseModal}>
+          Close
+        </Button>
+        {/* Purchase button */}
+        <Button variant="success" onClick={handleCloseModal}>
+          Purchase
+        </Button>
+        {/* Countdown timer */}
+        <div className="countdown-timer">Time Remaining: {Math.floor(remainingTime / 60)}:{(remainingTime % 60).toString().padStart(2, '0')}</div>
+      </Modal.Footer>
+    </Modal>
+    {/* Additional container for PayPal button */}
+    <div className="rectangle-layout">
+      <div id="paypal-button-container"></div>
+    </div>
+  </Container>
+);
+
+
+
+
+
+
 }
 
 export default App;
