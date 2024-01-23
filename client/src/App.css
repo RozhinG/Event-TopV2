@@ -7,11 +7,11 @@
 .circle-button {
   margin-top: 10px;
   padding: 10px;
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   background-color: #007bff;
-  color: white;
+  color: grey;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,8 +63,19 @@
 }
 
 .table-full {
-  background-color: #e74c3c; /* Example background color for full tables */
+  background-color: #ff0000	; /* Example background color for full tables */
 }
+
+.table-semi-empty {
+  background-color: #FFFFE0; /* Example background color for full tables */
+}
+
+.table-empty {
+  background-color: #90EE90	; /* Example background color for empty tables */
+}
+
+
+
 
 
 

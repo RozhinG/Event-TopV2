@@ -293,6 +293,7 @@ useEffect(() => {
   };
 }, [selectedTicketTypes, handleCloseModal, ticketPrices, remainingTime, feePercentage]);
 
+
 return (
   <Container className="mt-3">
     {/* Main container for the component */}
@@ -334,9 +335,9 @@ return (
       {/* Task list */}
       <div className="task-list">
         {tables.map((table, tableIndex) => (
-          <div key={tableIndex} className={`rectangle-button task-item ${calculateTableColor(table)}`}>
+          <div key={tableIndex} className={`circle-button task-item ${calculateTableColor(table)}`}>
             <div>
-              <strong>Table {tableIndex + 1}</strong>
+              <strong>Table {tableIndex + 1}</strong> ({table.capacity} seats)
             </div>
             <div>
               {table.reservations.map((reservation, index) => (
