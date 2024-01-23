@@ -1,2 +1,2 @@
 # Event Top
- Event Advertiment and ticket sell
+ Event Advertisement and Ticket Sale
