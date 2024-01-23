@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Badge, Dropdown, Modal, Alert } from 'react-bootstrap';
 import './App.css';
+import ReactDOM from 'react-dom';
 
 function App() {
   const [tables, setTables] = useState(Array.from({ length: 30 }, () => ({ reservations: [], capacity: 8 })));
@@ -22,21 +23,8 @@ function App() {
     kids: 60,
   };
 
-  useEffect(() => {
-    const newTotalTicketPrice = selectedTicketTypes.reduce((total, type) => total + ticketPrices[type], 0);
-    setTotalTicketPrice(newTotalTicketPrice);
 
-    const timeoutId = setTimeout(() => {
-      handleCloseModal();
-      alert('Purchase session expired. Please try again.');
-    }, 5 * 60 * 1000);
 
-    setPurchaseTimeout(timeoutId);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [selectedTicketTypes]);
 
   const handleAddReservation = () => {
     const table = tables[selectedTable - 1];
@@ -102,67 +90,138 @@ function App() {
   //};
 
 
-  const handleCloseModal = async () => {
-    setShowModal(false);
-    setShowTicketFields(false);
+  //const handleCloseModal = async () => {
+    //setShowModal(false);
+    //setShowTicketFields(false);
 
-	const buyerName = document.getElementById('buyerName').value;
-	const buyerSurname = document.getElementById('buyerSurname').value;
+	//const buyerName = document.getElementById('buyerName').value;
+	//const buyerSurname = document.getElementById('buyerSurname').value;
 
-    if (!buyerName || !buyerSurname) {
-      alert('Please enter both name and surname.');
-      return;
-    }
+    //if (!buyerName || !buyerSurname) {
+      //alert('Please enter both name and surname.');
+      //return;
+    //}
 
-    // Store reservation data in localStorage
-    const reservationData = {
-      tableNumber: selectedTable,
-      reservationText: reservationText,
-      buyerName: buyerName,
-      buyerSurname: buyerSurname,
-      ticketTypes: selectedTicketTypes,
-      totalTicketPrice: totalTicketPrice,
-    };
+    //// Store reservation data in localStorage
+    //const reservationData = {
+      //tableNumber: selectedTable,
+      //reservationText: reservationText,
+      //buyerName: buyerName,
+      //buyerSurname: buyerSurname,
+      //ticketTypes: selectedTicketTypes,
+      //totalTicketPrice: totalTicketPrice,
+    //};
 
-    // Log the reservation data to the console
-    console.log('Reservation Data:', reservationData);
+    //// Log the reservation data to the console
+    //console.log('Reservation Data:', reservationData);
 
-    // Show a confirmation message to the user
-    alert('Transfering to payment Gateway!');
+    //// Show a confirmation message to the user
+    //alert('Transfering to payment Gateway!');
 
-    localStorage.setItem('reservationData', JSON.stringify(reservationData)); //??????
+    //localStorage.setItem('reservationData', JSON.stringify(reservationData)); //??????
 
-    try {
-      // Redirect to the payment gateway
-      const response = await fetch('http://localhost:3000/api/purchase', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          // Include any necessary data for the purchase
-          // Example: reservationData
-        }),
-      });
+    //try {
+      //// Redirect to the payment gateway
+      //const response = await fetch('https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID', {
+		  //<script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID"></script>
 
-      if (response.ok) {
-        //const result = await response.json();
-        //window.location.href = result.paymentGatewayUrl;
-        alert('Payment successful.');
-      } else {
-        alert('Error initiating purchase. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An unexpected error occurred. Please try again later.');
-    }
+        //method: 'POST',
+        //headers: {
+          //'Content-Type': 'application/json',
+        //},
+        //body: JSON.stringify({
+          //// Include any necessary data for the purchase
+          //// Example: reservationData
+        //}),
+      //});
 
-    setReservationText('');
-    setSelectedSpots(1);
-    setSelectedTicketTypes(Array(selectedSpots).fill('standard'));
-    setTotalTicketPrice(0);
-    clearTimeout(purchaseTimeout);
+      //if (response.ok) {
+        ////const result = await response.json();
+        ////window.location.href = result.paymentGatewayUrl;
+        //alert('Payment successful.');
+      //} else {
+        //alert('Error initiating purchase. Please try again.');
+      //}
+    //} catch (error) {
+      //console.error('Error:', error);
+      //alert('An unexpected error occurred. Please try again later.');
+    //}
+
+    //setReservationText('');
+    //setSelectedSpots(1);
+    //setSelectedTicketTypes(Array(selectedSpots).fill('standard'));
+    //setTotalTicketPrice(0);
+    //clearTimeout(purchaseTimeout);
+  //};
+  
+  
+  
+
+
+const handleCloseModal = async () => {
+  setShowModal(false);
+  setShowTicketFields(false);
+
+  const buyerName = document.getElementById('buyerName').value;
+  const buyerSurname = document.getElementById('buyerSurname').value;
+
+  if (!buyerName || !buyerSurname) {
+    alert('Please enter both name and surname.');
+    return;
+  }
+
+  // Use PayPal SDK to handle payment
+  const paypalScript = document.createElement('script');
+  paypalScript.src = `https://www.paypal.com/sdk/js?client-id=Ae4yN7YaTyetmQIWanu2GQax0IAwJulSm2jze42lK0aDZRckVVUv35BBzWLE7RhMdAzHar2b2XzyiY-8&currency=CAD`;
+  paypalScript.async = true;
+  paypalScript.onload = () => {
+    handlePayPalPayment();
   };
+  document.body.appendChild(paypalScript);
+
+  setReservationText('');
+  setSelectedSpots(1);
+  setSelectedTicketTypes(Array(selectedSpots).fill('standard'));
+  setTotalTicketPrice(0);
+  clearTimeout(purchaseTimeout);
+};
+
+
+  const handlePayPalPayment = () => {
+    // Replace 'YOUR_CLIENT_ID' with your PayPal client ID
+    window.paypal
+      .Buttons({
+        createOrder: function (data, actions) {
+          return actions.order.create({
+            purchase_units: [
+              {
+                amount: {
+                  value: totalTicketPrice,
+                },
+              },
+            ],
+          });
+        },
+        onApprove: function (data, actions) {
+          return actions.order.capture().then(function (details) {
+            // Handle the successful payment here
+            alert('Payment successful! Transaction completed by ' + details.payer.name.given_name);
+          });
+        },
+        onError: function (err) {
+          // Handle errors here
+          console.error('PayPal error:', err);
+          alert('Payment failed. Please try again.');
+        },
+      })
+      .render('#paypal-button-container');
+  };
+
+
+
+
+
+
 
   const handleTicketTypeChange = (type, index) => {
     const updatedTicketTypes = [...selectedTicketTypes];
@@ -193,6 +252,27 @@ function App() {
   const getAvailableSeats = (table) => {
     return table.capacity - table.reservations.length;
   };
+
+
+
+
+	useEffect(() => {
+	  const newTotalTicketPrice = selectedTicketTypes.reduce((total, type) => total + ticketPrices[type], 0);
+	  setTotalTicketPrice(newTotalTicketPrice);
+
+	  const timeoutId = setTimeout(() => {
+		handleCloseModal();
+		alert('Purchase session expired. Please try again.');
+	  }, 5 * 60 * 1000);
+
+	  setPurchaseTimeout(timeoutId);
+
+	  return () => {
+		clearTimeout(timeoutId);
+	  };
+	}, [selectedTicketTypes, handleCloseModal, ticketPrices]);
+
+
 
   return (
     <Container className="mt-3">
@@ -287,6 +367,7 @@ function App() {
               </div>
             </Form>
           )}
+        <div id="paypal-button-container"></div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
@@ -297,6 +378,14 @@ function App() {
           </Button>
         </Modal.Footer>
       </Modal>
+      
+      <div className="rectangle-layout">
+        <div id="paypal-button-container"></div>
+      </div>
+      
+      
+      
+      
     </Container>
   );
 }

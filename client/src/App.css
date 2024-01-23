@@ -22,7 +22,7 @@
 .task-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 20px;
 }
 
 .task-item {
@@ -30,8 +30,8 @@
 }
 
 .empty-task {
-  width: 150px;
-  height: 150px;
+  width: 250px;
+  height: 250px;
   margin-top: 10px;
   border-radius: 50%;
   background-color: #6c757d; /* Default color for empty circles */
@@ -50,10 +50,10 @@
 
 .table-circle {
   position: absolute;
-  width: 20px;
-  height: 20px;
-  background-color: #3498db; /* Example background color */
-  border-radius: 50%;
+  width: 140px;
+  height: 140px;
+  background-color: #3438db; /* Example background color */
+  border-radius: 150%;
   display: flex;
   justify-content: center;
   align-items: center;
