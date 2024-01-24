@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Badge, Dropdown, Modal, Alert } from 'react-bootstrap';
 import './App.css';
-import ReactDOM from 'react-dom';
+//import ReactDOM from 'react-dom';
 import { calculateTotalWithFee } from './utils';
 
 function App() {
@@ -11,7 +11,8 @@ function App() {
   const [selectedTable, setSelectedTable] = useState(1);
   const [selectedSpots, setSelectedSpots] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [selectedTicketTypes, setSelectedTicketTypes] = useState(Array(1).fill('standard'));
+  //const [selectedTicketTypes, setSelectedTicketTypes] = useState(Array(1).fill('standard'));
+  const [selectedTicketTypes, setSelectedTicketTypes] = useState(Array(selectedSpots).fill('select'));
   const [showTicketFields, setShowTicketFields] = useState(false);
   const [totalTicketPrice, setTotalTicketPrice] = useState(0);
   const [purchaseTimeout, setPurchaseTimeout] = useState(null);
@@ -19,11 +20,15 @@ function App() {
   const [remainingTime, setRemainingTime] = useState(5 * 60); // 5 minutes in seconds
   const [fee, setFee] = useState(0);
   const [feePercentage, setFeePercentage] = useState(6); // Set your desired fee percentage here
-	// Initialize newTotalTicketPrice state
+  const [transfeePercentage, setTransFeePercentage] = useState(2.9); // Set your desired fee percentage here
+  
+
+  // Initialize newTotalTicketPrice state
   const [newTotalTicketPrice, setNewTotalTicketPrice] = useState(0);
   
   
   const ticketPrices = {
+    select: 0,
     standard: 100,
     VIP: 120,
     student: 85,
@@ -37,7 +42,7 @@ function App() {
     updatedTicketTypes[index] = type;
     setSelectedTicketTypes(updatedTicketTypes);
 
-    const newTotalTicketPrice = updatedTicketTypes.reduce((total, t) => total + 5 + ticketPrices[t], 0);
+    const newTotalTicketPrice = updatedTicketTypes.reduce((total, t) => total + ticketPrices[t], 0);
     setTotalTicketPrice(newTotalTicketPrice);
 
     clearTimeout(purchaseTimeout);
@@ -237,6 +242,12 @@ const handleCloseModal = async () => {
           console.error('PayPal error:', err);
           alert('Payment failed. Please try again.');
         },
+          style: {
+    layout: 'vertical',
+    color:  'gold',
+    shape:  'rect',
+    label:  'paypal'
+  },
       })
       .render('#paypal-button-container');
   };
@@ -269,19 +280,23 @@ const handleCloseModal = async () => {
 useEffect(() => {
 
   // Calculate the total ticket price including the fee using the utility function
-  const { totalWithFee, feeAmount } = calculateTotalWithFee(selectedTicketTypes, ticketPrices, feePercentage);
+  const { totalWithFee, trnsfee, feeAmount } = calculateTotalWithFee(selectedTicketTypes, ticketPrices, transfeePercentage, feePercentage);
 
   // Set the total ticket price
-  setTotalTicketPrice(totalWithFee);
+  //setTotalTicketPrice(totalWithFee);
 
-  setFee(feeAmount);
+  //setFee(feeAmount);
+
+  //setTransFeePercentage(trnsfee);
+  
+  //console.log('feePercentage:', feePercentage);
   
   const timeoutId = setTimeout(() => {
     handleCloseModal();
     alert('Purchase session expired. Please try again.');
   }, remainingTime * 1000);
 
-  setPurchaseTimeout(timeoutId);
+  //setPurchaseTimeout(timeoutId);
 
   // Update the remaining time every second
   const intervalId = setInterval(() => {
@@ -387,6 +402,7 @@ return (
                     onChange={(e) => handleTicketTypeChange(e.target.value, index)}
                   >
                     {/* Options for ticket types */}
+    				<option value="select">Select</option>
                     <option value="standard">Standard ($100)</option>
                     <option value="VIP">VIP ($120)</option>
                     <option value="student">Student ($85)</option>
@@ -399,6 +415,7 @@ return (
             <div className="mt-3">
               <strong>Notes:</strong>
               <ul>
+                <li>Transcation Fee (2.9%): ${totalTicketPrice}</li>
                 <li>Fee (6%): ${totalTicketPrice}</li>
                 <li>Total Ticket Price + Fee: ${totalTicketPrice}</li>
               </ul>
@@ -406,7 +423,7 @@ return (
           </Form>
         )}
         {/* PayPal button container */}
-        <div id="paypal-button-container"></div>
+        {/* <div id="paypal-button-container"></div> */}
       </Modal.Body>
       {/* Modal footer */}
       <Modal.Footer>
