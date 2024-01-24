@@ -5,10 +5,10 @@
 }
 
 .circle-button {
-  margin-top: 10px;
-  padding: 10px;
-  width: 100px;
-  height: 100px;
+  margin-top: 5px;
+  padding: 25px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   background-color: #007bff;
   color: grey;
@@ -16,7 +16,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: regular;
 }
 
 .task-list {

@@ -4,9 +4,11 @@ export const calculateTotalWithFee = (ticketTypes, ticketPrices, transfeePercent
   const totalTicketPrice = ticketTypes.reduce((total, type) => total + ticketPrices[type], 0);
   const trnsfee = (totalTicketPrice * transfeePercentage) / 100 ;
   const feeAmount = (totalTicketPrice * feePercentage) / 100;
+  const totalfee = trnsfee + feeAmount ;
   return {
-    totalWithFee: totalTicketPrice + trnsfee + feeAmount,
+    totalWithFee: totalTicketPrice + totalfee,
 	trnsfee,
 	feeAmount,
+	totalfee,
   };
 };

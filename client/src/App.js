@@ -17,7 +17,7 @@ function App() {
   const [totalTicketPrice, setTotalTicketPrice] = useState(0);
   const [purchaseTimeout, setPurchaseTimeout] = useState(null);
 
-  const [remainingTime, setRemainingTime] = useState(5 * 60); // 5 minutes in seconds
+  const [remainingTime, setRemainingTime] = useState(10 * 60); // 5 minutes in seconds
   const [fee, setFee] = useState(0);
   const [feePercentage, setFeePercentage] = useState(6); // Set your desired fee percentage here
   const [transfeePercentage, setTransFeePercentage] = useState(2.9); // Set your desired fee percentage here
@@ -28,7 +28,6 @@ function App() {
   
   
   const ticketPrices = {
-    select: 0,
     standard: 100,
     VIP: 120,
     student: 85,
@@ -37,36 +36,58 @@ function App() {
 
 
 
-  const handleTicketTypeChange = (type, index) => {
-    const updatedTicketTypes = [...selectedTicketTypes];
+const handleTicketTypeChange = (type, index) => {
+  const updatedTicketTypes = [...selectedTicketTypes];
+  
+  // Check if the selected table is in the specified range
+  const isVipTable = [1, 2, 3, 4, 5, 16, 17, 18, 19, 20].includes(selectedTable);
+
+  // If the selected table is a VIP table, force the ticket type to be VIP
+  if (isVipTable && type !== 'VIP') {
+    alert('Only VIP tickets are allowed for this table.');
+    updatedTicketTypes[index] = 'VIP';
+  } else {
     updatedTicketTypes[index] = type;
-    setSelectedTicketTypes(updatedTicketTypes);
+  }
 
-    const newTotalTicketPrice = updatedTicketTypes.reduce((total, t) => total + ticketPrices[t], 0);
-    setTotalTicketPrice(newTotalTicketPrice);
+  setSelectedTicketTypes(updatedTicketTypes);
 
-    clearTimeout(purchaseTimeout);
-    const timeoutId = setTimeout(() => {
-      handleCloseModal();
-      alert('Purchase session expired. Please try again.');
-    }, 5 * 60 * 1000);
-    setPurchaseTimeout(timeoutId);
-  };
+  const newTotalTicketPrice = updatedTicketTypes.reduce((total, t) => total + ticketPrices[t], 0);
+  setTotalTicketPrice(newTotalTicketPrice);
 
-  const handleAddReservation = () => {
-    const table = tables[selectedTable - 1];
+  clearTimeout(purchaseTimeout);
+  const timeoutId = setTimeout(() => {
+    handleCloseModal();
+    alert('Purchase session expired. Please try again.');
+  }, 5 * 60 * 1000);
+  setPurchaseTimeout(timeoutId);
+};
 
-    if (selectedSpots <= table.capacity && selectedSpots <= 8) {
-      setShowModal(true);
-      setShowTicketFields(true);
-      //setTotalTicketPrice(selectedSpots * ticketPrices[selectedTicketTypes[0]]);
 
-    } else if (selectedSpots > 8) {
-      alert("You can't reserve more than 8 spots for a single table.");
-    } else {
-      alert(`Only ${table.capacity} spots available for this table.`);
+
+const handleAddReservation = () => {
+  const table = tables[selectedTable - 1];
+
+  if (selectedSpots <= table.capacity && selectedSpots <= 8) {
+    const isVipTicketAlreadyReserved = table.reservations.some(reservation =>
+      reservation.ticketTypes.includes('VIP')
+    );
+
+    if (isVipTicketAlreadyReserved && [1, 2, 3, 4, 5, 16, 17, 18, 19, 20].includes(selectedTable)) {
+      alert("VIP ticket already reserved for this table.");
+      return;
     }
-  };
+
+    setShowModal(true);
+    setShowTicketFields(true);
+  } else if (selectedSpots > 8) {
+    alert("You can't reserve more than 8 spots for a single table.");
+  } else {
+    alert(`Only ${table.capacity} spots available for this table.`);
+  }
+};
+
+
   
   
   
@@ -280,10 +301,10 @@ const handleCloseModal = async () => {
 useEffect(() => {
 
   // Calculate the total ticket price including the fee using the utility function
-  const { totalWithFee, trnsfee, feeAmount } = calculateTotalWithFee(selectedTicketTypes, ticketPrices, transfeePercentage, feePercentage);
+  const { totalWithFee, trnsfee, feeAmount, totalfee } = calculateTotalWithFee(selectedTicketTypes, ticketPrices, transfeePercentage, feePercentage);
 
   // Set the total ticket price
-  //setTotalTicketPrice(totalWithFee);
+  setTotalTicketPrice(totalWithFee);
 
   //setFee(feeAmount);
 
@@ -335,12 +356,18 @@ return (
         <div className="enter-seats-section">
           <h5 className="mb-3">Enter number of seats:</h5>
           <Form.Group controlId="selectedSpots">
-            <Form.Control
-              type="number"
-              placeholder="Number of spots"
-              value={selectedSpots}
-              onChange={(e) => setSelectedSpots(Math.max(1, parseInt(e.target.value, 10)))}
-            />
+
+<Form.Control
+  type="number"
+  placeholder="Number of spots"
+  value={selectedSpots}
+  onChange={(e) => {
+    const newValue = e.target.value !== '' ? Math.max(1, parseInt(e.target.value, 10)) : '';
+    setSelectedSpots(newValue);
+  }}
+/>
+
+
           </Form.Group>
         </div>
         {/* Button to add reservation */}
@@ -349,22 +376,25 @@ return (
         </Button>
       </Form>
       {/* Task list */}
-      <div className="task-list">
-        {tables.map((table, tableIndex) => (
-          <div key={tableIndex} className={`circle-button task-item ${calculateTableColor(table)}`}>
-            <div>
-              <strong>Table {tableIndex + 1}</strong> ({table.capacity} seats)
-            </div>
-            <div>
-              {table.reservations.map((reservation, index) => (
-                <Badge key={index} pill variant="info" className="mr-1">
-                  {reservation.name} ({reservation.spots} spots)
-                </Badge>
-              ))}
-            </div>
-          </div>
+{/* Task list */}
+<div className="task-list">
+  {tables.map((table, tableIndex) => (
+    <div key={tableIndex} className={`circle-button task-item ${calculateTableColor(table)}`}>
+      <div>
+        <strong>{[1, 2, 3, 4, 5, 16, 17, 18, 19, 20].includes(tableIndex + 1) ? `VIP Table ${tableIndex + 1}` : `Table ${tableIndex + 1}`}</strong> ({table.capacity} seats)
+      </div>
+      <div>
+        {table.reservations.map((reservation, index) => (
+          <Badge key={index} pill variant="info" className="mr-1">
+            {reservation.name} ({reservation.spots} spots)
+          </Badge>
         ))}
       </div>
+    </div>
+  ))}
+</div>
+
+
     </div>
     {/* Reservation modal */}
     <Modal show={showModal} onHide={handleCloseModal} dialogClassName="custom-modal-width">
@@ -397,17 +427,18 @@ return (
                   <span className="mr-2">{`Price: $${ticketPrices[selectedTicketTypes[index]]}`}</span>
                   {/* Dropdown for selecting ticket type */}
                   <Form.Control
-                    as="select"
-                    value={selectedTicketTypes[index]}
-                    onChange={(e) => handleTicketTypeChange(e.target.value, index)}
-                  >
-                    {/* Options for ticket types */}
-    				<option value="select">Select</option>
-                    <option value="standard">Standard ($100)</option>
-                    <option value="VIP">VIP ($120)</option>
-                    <option value="student">Student ($85)</option>
-                    <option value="kids">Kids ($60)</option>
-                  </Form.Control>
+				  as="select"
+				  value={selectedTicketTypes[index]}
+				  onChange={(e) => handleTicketTypeChange(e.target.value, index)}
+				>
+				  <option value="select">Select</option>
+				  <option value="standard">Standard ($100)</option>
+				  <option value="VIP">VIP ($120)</option>
+				  <option value="student">Student ($85)</option>
+				  <option value="kids">Kids ($60)</option>
+				</Form.Control>
+                  
+
                 </div>
               </Form.Group>
             ))}
@@ -415,8 +446,8 @@ return (
             <div className="mt-3">
               <strong>Notes:</strong>
               <ul>
-                <li>Transcation Fee (2.9%): ${totalTicketPrice}</li>
-                <li>Fee (6%): ${totalTicketPrice}</li>
+                <li>Transcation Fee: ${totalTicketPrice}</li>
+                {/* <li>Fee (6%): ${totalTicketPrice}</li> */}
                 <li>Total Ticket Price + Fee: ${totalTicketPrice}</li>
               </ul>
             </div>
@@ -428,9 +459,9 @@ return (
       {/* Modal footer */}
       <Modal.Footer>
         {/* Close button */}
-        <Button variant="secondary" onClick={handleCloseModal}>
-          Close
-        </Button>
+  <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+    Close
+  </button>
         {/* Purchase button */}
         <Button variant="success" onClick={handleCloseModal}>
           Purchase
