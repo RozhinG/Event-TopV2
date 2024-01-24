@@ -50,8 +50,8 @@ function App() {
   const ticketPrices = {
     standard: 100,
     VIP: 120,
-    student: 1,
-    kids: 1,
+    student: 5,
+    kids: 5,
   };
 
 
