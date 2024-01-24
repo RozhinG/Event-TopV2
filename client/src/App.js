@@ -7,6 +7,9 @@ import { calculateTotalWithFee } from './utils';
 
 function App() {
   const [tables, setTables] = useState(Array.from({ length: 30 }, () => ({ reservations: [], capacity: 8 })));
+
+
+
   const [reservationText, setReservationText] = useState('');
   const [selectedTable, setSelectedTable] = useState(1);
   const [selectedSpots, setSelectedSpots] = useState(1);
@@ -21,17 +24,34 @@ function App() {
   const [fee, setFee] = useState(0);
   const [feePercentage, setFeePercentage] = useState(6); // Set your desired fee percentage here
   const [transfeePercentage, setTransFeePercentage] = useState(2.9); // Set your desired fee percentage here
+
   
 
   // Initialize newTotalTicketPrice state
   const [newTotalTicketPrice, setNewTotalTicketPrice] = useState(0);
-  
+
+  const resetState = () => {
+    setTables(Array.from({ length: 30 }, () => ({ reservations: [], capacity: 8 })));
+    setReservationText('');
+    setSelectedTable(1);
+    setSelectedSpots(1);
+    setShowModal(false);
+    setSelectedTicketTypes(Array(1).fill('select'));
+    setShowTicketFields(false);
+    setTotalTicketPrice(0);
+    setPurchaseTimeout(null);
+    setRemainingTime(10 * 60);
+    setFee(0);
+    setFeePercentage(6);
+    setTransFeePercentage(2.9);
+    setNewTotalTicketPrice(0);
+  };  
   
   const ticketPrices = {
     standard: 100,
     VIP: 120,
-    student: 85,
-    kids: 60,
+    student: 1,
+    kids: 1,
   };
 
 
@@ -267,7 +287,9 @@ const handleCloseModal = async () => {
     layout: 'vertical',
     color:  'gold',
     shape:  'rect',
-    label:  'paypal'
+    label:  'paypal',
+    height: 50,
+    width: 150,
   },
       })
       .render('#paypal-button-container');
@@ -354,12 +376,12 @@ return (
         </div>
         {/* Enter number of seats section */}
         <div className="enter-seats-section">
-          <h5 className="mb-3">Enter number of seats:</h5>
+          <h5 className="w-25 mb-3 ">Enter number of seats:</h5>
           <Form.Group controlId="selectedSpots">
 
 <Form.Control
   type="number"
-  placeholder="Number of spots"
+  placeholder="Number of seats"
   value={selectedSpots}
   onChange={(e) => {
     const newValue = e.target.value !== '' ? Math.max(1, parseInt(e.target.value, 10)) : '';
@@ -457,18 +479,24 @@ return (
         {/* <div id="paypal-button-container"></div> */}
       </Modal.Body>
       {/* Modal footer */}
-      <Modal.Footer>
-        {/* Close button */}
-  <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+<Modal.Footer>
+  {/* Close button */}
+  <button type="button" className="btn btn-secondary" onClick={() => {
+    resetState(); // Reset all state variables
+    setShowModal(false);
+  }}>
     Close
   </button>
-        {/* Purchase button */}
-        <Button variant="success" onClick={handleCloseModal}>
-          Purchase
-        </Button>
-        {/* Countdown timer */}
-        <div className="countdown-timer">Time Remaining: {Math.floor(remainingTime / 60)}:{(remainingTime % 60).toString().padStart(2, '0')}</div>
-      </Modal.Footer>
+  {/* Purchase button */}
+  <Button variant="success" onClick={handleCloseModal}>
+    Purchase
+  </Button>
+  {/* Countdown timer */}
+  <div className="countdown-timer">Time Remaining: {Math.floor(remainingTime / 60)}:{(remainingTime % 60).toString().padStart(2, '0')}</div>
+</Modal.Footer>
+
+
+
     </Modal>
     {/* Additional container for PayPal button */}
     <div className="rectangle-layout">

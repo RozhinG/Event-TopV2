@@ -1,7 +1,9 @@
 .rectangle-layout {
-  display: flex;
-  flex-direction: column;
+  display: inline-block;
+  grid-template-columns: 1fr; /* or auto if you want columns to adjust based on content */
+  grid-template-rows: auto;
   align-items: center;
+  padding: 20px;
 }
 
 .circle-button {
@@ -22,7 +24,7 @@
 .task-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 10px;
 }
 
 .task-item {
@@ -30,8 +32,8 @@
 }
 
 .empty-task {
-  width: 250px;
-  height: 250px;
+  width: 1250px;
+  height: 1250px;
   margin-top: 10px;
   border-radius: 50%;
   background-color: #6c757d; /* Default color for empty circles */
@@ -48,19 +50,6 @@
   height: auto;
 }
 
-.table-circle {
-  position: absolute;
-  width: 140px;
-  height: 140px;
-  background-color: #3438db; /* Example background color */
-  border-radius: 150%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #fff; /* Example text color */
-  font-weight: bold;
-  cursor: pointer;
-}
 
 .table-full {
   background-color: #ff0000	; /* Example background color for full tables */
