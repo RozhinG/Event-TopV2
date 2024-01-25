@@ -1,6 +1,6 @@
 // App.js
 import React, { useState, useEffect } from 'react';
-import { Container, Form, Button, Badge, Dropdown, Modal, Alert } from 'react-bootstrap';
+import { Container, Form, Button, Badge, Dropdown, Modal, Alert, Row, Col } from 'react-bootstrap';
 import './App.css';
 import PayPalButton from './PayPalButton';
 import PurchaseCart from './PurchaseCart';
@@ -459,6 +459,17 @@ useEffect(() => {
 return (
   <Container className="mt-3">
 
+  <div class="row d-flex justify-content-cente">
+
+    {/* PURCHASE CART */}
+	  <div class="row d-flex justify-content-cente">
+		{/* Other components and content */}
+		{purchasedItems.length > 0 && <PurchaseCart purchasedItems={purchasedItems} />}
+		{/* Other components and content */}
+		<button onClick={handlePrintPurchaseCart}>Print Purchase Cart</button>
+	  </div>
+	  
+  </div>
 
   <div class="row">
     <div class="col-6">
@@ -500,39 +511,33 @@ return (
           Add Reservation
         </Button>
       </Form>
+
       {/* Task list */}
       {/* Task list */}
       {/* Task list */}
-      <div className="task-list">
-        {tables.map((table, tableIndex) => (
-          <div key={tableIndex} className={`circle-button task-item ${calculateTableColor(table)}`}>
-            {/* Seat Capacity */}
-            <div className="table-info">
-              <strong>{[1, 2, 3, 4, 5, 16, 17, 18, 19, 20].includes(tableIndex + 1) ? `VIP Table ${tableIndex + 1}` : `Table ${tableIndex + 1}`}</strong>
-              <span>({table.capacity} seats)</span>
-            </div>
-            {/* Reservations */}
-            <div className="reservation-info">
-              {table.reservations.map((reservation, index) => (
-                <Badge key={index} pill variant="info" className="mr-1">
-                  {reservation.name} ({reservation.spots} spots)
-                </Badge>
-              ))}
-            </div>
+    <Row className="task-list">
+      {tables.map((table, tableIndex) => (
+        <Col key={tableIndex} xs={12} sm={6} md={4} lg={3} className={`circle-button task-item ${calculateTableColor(table)}`}>
+          <div className="table-info">
+            <strong>{[1, 2, 3, 4, 5, 16, 17, 18, 19, 20].includes(tableIndex + 1) ? `VIP Table ${tableIndex + 1}` : `Table ${tableIndex + 1}`}</strong>
+            <span>({table.capacity} seats)</span>
           </div>
-        ))}
-      </div>
+          <div className="reservation-info">
+            {table.reservations.map((reservation, index) => (
+              <Badge key={index} pill variant="info" className="mr-1">
+                {reservation.name} ({reservation.spots} spots)
+              </Badge>
+            ))}
+          </div>
+        </Col>
+      ))}
+    </Row>
     
     
     </div>
     <div class="col-6">
 
-	  <div>
-		{/* Other components and content */}
-		{purchasedItems.length > 0 && <PurchaseCart purchasedItems={purchasedItems} />}
-		{/* Other components and content */}
-		<button onClick={handlePrintPurchaseCart}>Print Purchase Cart</button>
-	  </div>
+
     
 
     {/* Additional container for PayPal button */}

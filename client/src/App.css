@@ -20,6 +20,7 @@
   justify-content: center;
   cursor: pointer;
   font-weight: regular;
+  font-size: 10px;
 }
 
 .task-list {
@@ -71,6 +72,13 @@
   margin: 0 auto; /* Center the modal horizontally */
 }
 
+/* Media query for smaller screens */
+@media (max-width: 268px) {
+  .circle-button {
+    font-size: 6px; /* Adjust font size for smaller screens */
+    /* Add other styles for smaller screens */
+  }
+}
 
 
 
