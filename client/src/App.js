@@ -2,13 +2,33 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Badge, Dropdown, Modal, Alert } from 'react-bootstrap';
 import './App.css';
+import PayPalButton from './PayPalButton';
+import PurchaseCart from './PurchaseCart';
+
 //import ReactDOM from 'react-dom';
 import { calculateTotalWithFee } from './utils';
 
 function App() {
   const [tables, setTables] = useState(Array.from({ length: 30 }, () => ({ reservations: [], capacity: 8 })));
 
+  //const [tables, setTables] = useState([]);
 
+  //useEffect(() => {
+    //// Load table data from the JSON file
+    //const loadTableData = async () => {
+      //try {
+        //const response = await fetch('tablesData.json'); // Update with the correct path
+        //const data = await response.json();
+        //setTables(data);
+      //} catch (error) {
+        //console.error('Error loading table data:', error);
+      //}
+    //};
+    
+  //loadTableData();
+  //}, []); // Run this effect only once on component mount
+
+  const [capturedDetails, setCapturedDetails] = useState(null);
 
   const [reservationText, setReservationText] = useState('');
   const [selectedTable, setSelectedTable] = useState(1);
@@ -25,10 +45,20 @@ function App() {
   const [feePercentage, setFeePercentage] = useState(6); // Set your desired fee percentage here
   const [transfeePercentage, setTransFeePercentage] = useState(2.9); // Set your desired fee percentage here
 
-  
+   // Assuming you have a state variable and its setter function for buyer's email
+  const [buyerEmail, setBuyerEmail] = useState('');  
 
   // Initialize newTotalTicketPrice state
   const [newTotalTicketPrice, setNewTotalTicketPrice] = useState(0);
+  const [purchasedItems, setPurchasedItems] = useState([]);
+  
+  // Purchase success variables
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [transactionDetails, setTransactionDetails] = useState(null);
+
+  const handleShowSuccessModal = () => setShowSuccessModal(true);
+  const handleCloseSuccessModal = () => setShowSuccessModal(false);
+
 
   const resetState = () => {
     setTables(Array.from({ length: 30 }, () => ({ reservations: [], capacity: 8 })));
@@ -50,10 +80,17 @@ function App() {
   const ticketPrices = {
     standard: 100,
     VIP: 120,
-    student: 5,
-    kids: 5,
+    student: 1,
+    kids: 1,
   };
 
+  const handleCaptureDetails = (details) => {
+    // Handle the captured details as needed
+    console.log('Captured PayPal Details:', details);
+    setCapturedDetails(details);
+
+    // You can perform additional actions here, such as updating state or making API calls
+  };
 
 
 const handleTicketTypeChange = (type, index) => {
@@ -78,12 +115,12 @@ const handleTicketTypeChange = (type, index) => {
   clearTimeout(purchaseTimeout);
   const timeoutId = setTimeout(() => {
     handleCloseModal();
+    // Reload the app when the timer ends
     alert('Purchase session expired. Please try again.');
-  }, 5 * 60 * 1000);
+    window.location.reload();
+  }, remainingTime * 1000);
   setPurchaseTimeout(timeoutId);
 };
-
-
 
 const handleAddReservation = () => {
   const table = tables[selectedTable - 1];
@@ -105,6 +142,9 @@ const handleAddReservation = () => {
   } else {
     alert(`Only ${table.capacity} spots available for this table.`);
   }
+
+    setShowModal(true);
+    setShowTicketFields(true);
 };
 
 
@@ -239,16 +279,40 @@ const handleCloseModal = async () => {
     return;
   }
 
+    // Store reservation data in state
+    const reservationData = {
+      tableNumber: selectedTable,
+      reservationText: reservationText,
+      buyerName: buyerName,
+      buyerSurname: buyerSurname,
+      ticketTypes: selectedTicketTypes,
+      totalTicketPrice: totalTicketPrice,
+    };
+
+
+    // Update purchased items state
+    setPurchasedItems((prevItems) => [...prevItems, reservationData]);
+
   // Use PayPal SDK to handle payment
   const paypalScript = document.createElement('script');
-  //paypalScript.src = `https://www.paypal.com/sdk/js?client-id=Ae4yN7YaTyetmQIWanu2GQax0IAwJulSm2jze42lK0aDZRckVVUv35BBzWLE7RhMdAzHar2b2XzyiY-8&currency=CAD`;
-  paypalScript.src = `https://www.paypal.com/sdk/js?client-id=Ae4yN7YaTyetmQIWanu2GQax0IAwJulSm2jze42lK0aDZRckVVUv35BBzWLE7RhMdAzHar2b2XzyiY-8&buyer-country=CA&currency=CAD`;
+  //paypalScript.src = `https://www.paypal.com/sdk/js?client-id=ATMvY5-1N5sOTVS4mXgjwGSUMnOQD1kjhTClWHpSe95szpUh8rTY-2vWjTDNlrEiAotYpyyR__h2Hcm9&currency=CAD&locale=en_ca`;
+
+
+  // AYSpzj2tY_WJ6Pw5WCGRX9AnrSoX2Es12cxXyWVVZkASit6zo4LfqGiYIIQoi1ChsWmcpN7UKl4In1Ig --> working sandbox
+  //paypalScript.src = `https://www.paypal.com/sdk/js?client-id=ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW&buyer-country=CA&currency=CAD`;
+
+  // ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW --> not working LIVE
+  paypalScript.src = `https://www.paypal.com/sdk/js?client-id=ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW&currency=CAD`;
   paypalScript.async = true;
   paypalScript.onload = () => {
     handlePayPalPayment();
   };
+	paypalScript.onerror = () => {
+	  console.error('Error loading PayPal SDK');
+	  // You can add more detailed error handling here
+	};
   document.body.appendChild(paypalScript);
-
+    
   setReservationText('');
   setSelectedSpots(1);
   setSelectedTicketTypes(Array(selectedSpots).fill('standard'));
@@ -257,43 +321,68 @@ const handleCloseModal = async () => {
 };
 
 
-  const handlePayPalPayment = () => {
-    // Replace 'YOUR_CLIENT_ID' with your PayPal client ID
-    window.paypal
-      .Buttons({
-        createOrder: function (data, actions) {
-          return actions.order.create({
-            purchase_units: [
-              {
-                amount: {
-                  value: totalTicketPrice,
-                },
+const handleCloseModalTimeOut = async () => {
+  setShowModal(false);
+  setShowTicketFields(false);
+
+  clearTimeout(purchaseTimeout);
+};
+
+const handlePrintPurchaseCart = () => {
+  window.print();
+};
+
+
+const handlePayPalPayment = () => {
+  // Replace 'YOUR_CLIENT_ID' with your PayPal client ID
+  window.paypal
+    .Buttons({
+      createOrder: function (data, actions) {
+        const formattedTotal = totalTicketPrice.toFixed(2); // Format total price with two decimal places
+        return actions.order.create({
+          purchase_units: [
+            {
+              amount: {
+                value: formattedTotal,
               },
-            ],
-          });
-        },
-        onApprove: function (data, actions) {
-          return actions.order.capture().then(function (details) {
-            // Handle the successful payment here
-            alert('Payment successful! Transaction completed by ' + details.payer.name.given_name);
-          });
-        },
-        onError: function (err) {
-          // Handle errors here
-          console.error('PayPal error:', err);
-          alert('Payment failed. Please try again.');
-        },
-          style: {
-    layout: 'vertical',
-    color:  'gold',
-    shape:  'rect',
-    label:  'paypal',
-    height: 50,
-    width: 150,
-  },
-      })
-      .render('#paypal-button-container');
-  };
+            },
+          ],
+        });
+      },
+      onApprove: function (data, actions) {
+        return actions.order.capture().then(function (details) {
+          // Handle the successful payment here
+          alert('Payment successful! Transaction completed by ' + details.payer.name.given_name);
+
+          setTransactionDetails(details); // Save transaction details
+          handleShowSuccessModal(); // Show the success modal
+
+          // Handle the successful payment here
+          handleShowSuccessModal(); // Show the success modal
+          // Other logic, if needed
+        });
+      },
+      onError: function (err) {
+        // Handle errors here
+        console.error('PayPal error:', err);
+        alert('Payment failed. Please try again.');
+      }
+      //style: {
+        //layout: 'vertical',
+        //color: 'gold',
+        //shape: 'rect',
+        //label: 'paypal',
+        //height: 40,
+        //width: 150,
+      //},
+    })
+    .render('#paypal-button-container');
+};
+
+
+
+
+
 
 
 
@@ -317,6 +406,16 @@ const handleCloseModal = async () => {
     return table.capacity - table.reservations.length;
   };
 
+//function getAvailableSeats(table) {
+  //// Check if the table is defined and has the expected structure
+  //if (table && typeof table === 'object' && 'capacity' in table) {
+    //const reservedSeats = table.reservations.reduce((total, reservation) => total + reservation.spots, 0);
+    //return table.capacity - reservedSeats;
+  //}
+
+  //// Return a default value if the table is not valid
+  //return 0;
+//}
 
 // ... (previous code)
 
@@ -333,12 +432,14 @@ useEffect(() => {
   //setTransFeePercentage(trnsfee);
   
   //console.log('feePercentage:', feePercentage);
-  
-  const timeoutId = setTimeout(() => {
-    handleCloseModal();
-    alert('Purchase session expired. Please try again.');
-  }, remainingTime * 1000);
 
+  const timeoutId = setTimeout(() => {
+    handleCloseModalTimeOut();
+    alert('Purchase session expired. Please try again.');
+    // Reload the app when the timer ends
+    window.location.reload();
+  }, remainingTime * 1000);
+  
   //setPurchaseTimeout(timeoutId);
 
   // Update the remaining time every second
@@ -353,11 +454,16 @@ useEffect(() => {
 }, [selectedTicketTypes, handleCloseModal, ticketPrices, remainingTime, feePercentage]);
 
 
+
+
 return (
   <Container className="mt-3">
-    {/* Main container for the component */}
-    <div className="rectangle-layout">
-      <Form>
+
+
+  <div class="row">
+    <div class="col-6">
+    
+    <Form>
         {/* Select Table section */}
         <div className="select-table-section">
           <h5 className="mb-3">Select Table:</h5>
@@ -376,20 +482,17 @@ return (
         </div>
         {/* Enter number of seats section */}
         <div className="enter-seats-section">
-          <h5 className="w-25 mb-3 ">Enter number of seats:</h5>
+          <h5 className="w-75 mb-3 ">Enter number of seats:</h5>
           <Form.Group controlId="selectedSpots">
-
-<Form.Control
-  type="number"
-  placeholder="Number of seats"
-  value={selectedSpots}
-  onChange={(e) => {
-    const newValue = e.target.value !== '' ? Math.max(1, parseInt(e.target.value, 10)) : '';
-    setSelectedSpots(newValue);
-  }}
-/>
-
-
+            <Form.Control
+              type="number"
+              placeholder="Number of seats"
+              value={selectedSpots}
+              onChange={(e) => {
+                const newValue = e.target.value !== '' ? Math.max(1, parseInt(e.target.value, 10)) : '';
+                setSelectedSpots(newValue);
+              }}
+            />
           </Form.Group>
         </div>
         {/* Button to add reservation */}
@@ -398,28 +501,51 @@ return (
         </Button>
       </Form>
       {/* Task list */}
-{/* Task list */}
-<div className="task-list">
-  {tables.map((table, tableIndex) => (
-    <div key={tableIndex} className={`circle-button task-item ${calculateTableColor(table)}`}>
-      <div>
-        <strong>{[1, 2, 3, 4, 5, 16, 17, 18, 19, 20].includes(tableIndex + 1) ? `VIP Table ${tableIndex + 1}` : `Table ${tableIndex + 1}`}</strong> ({table.capacity} seats)
-      </div>
-      <div>
-        {table.reservations.map((reservation, index) => (
-          <Badge key={index} pill variant="info" className="mr-1">
-            {reservation.name} ({reservation.spots} spots)
-          </Badge>
+      {/* Task list */}
+      {/* Task list */}
+      <div className="task-list">
+        {tables.map((table, tableIndex) => (
+          <div key={tableIndex} className={`circle-button task-item ${calculateTableColor(table)}`}>
+            {/* Seat Capacity */}
+            <div className="table-info">
+              <strong>{[1, 2, 3, 4, 5, 16, 17, 18, 19, 20].includes(tableIndex + 1) ? `VIP Table ${tableIndex + 1}` : `Table ${tableIndex + 1}`}</strong>
+              <span>({table.capacity} seats)</span>
+            </div>
+            {/* Reservations */}
+            <div className="reservation-info">
+              {table.reservations.map((reservation, index) => (
+                <Badge key={index} pill variant="info" className="mr-1">
+                  {reservation.name} ({reservation.spots} spots)
+                </Badge>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
+    
+    
     </div>
-  ))}
-</div>
+    <div class="col-6">
+
+	  <div>
+		{/* Other components and content */}
+		{purchasedItems.length > 0 && <PurchaseCart purchasedItems={purchasedItems} />}
+		{/* Other components and content */}
+		<button onClick={handlePrintPurchaseCart}>Print Purchase Cart</button>
+	  </div>
+    
+
+    {/* Additional container for PayPal button */}
+    <div id="paypal-button-container"></div>
+    
+    
+        
+    </div>
+  </div>
 
 
-    </div>
     {/* Reservation modal */}
-    <Modal show={showModal} onHide={handleCloseModal} dialogClassName="custom-modal-width">
+    <Modal show={showModal} onHide={handleCloseModal} dialogClassName="custom-modal">
       <Modal.Header closeButton>
         <Modal.Title>
           Select Tickets - Table {selectedTable} ({getAvailableSeats(tables[selectedTable - 1])} available seats)
@@ -431,6 +557,7 @@ return (
           <Form>
             {/* Alert */}
             <Alert variant="warning">Note: Tickets are non-refundable.</Alert>
+            <Alert variant="warning">Note: All fields must be completed.</Alert>
             {/* Buyer's name input */}
             <Form.Group controlId="buyerName">
               <Form.Label>Name</Form.Label>
@@ -441,6 +568,27 @@ return (
               <Form.Label>Surname</Form.Label>
               <Form.Control type="text" placeholder="Enter your surname" />
             </Form.Group>
+            {/* Buyer's EMAIL input */}
+            <Form.Group controlId="buyerEmail">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="email"
+                placeholder="Enter your email"
+                onChange={(e) => {
+                  const emailValue = e.target.value.trim();
+                  // Validate email using a regular expression
+                  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  if (emailPattern.test(emailValue) || emailValue === '') {
+                    // Valid email or empty string
+                    setBuyerEmail(emailValue);
+                  } else {
+                    // Invalid email
+                    // You can display an error message or take other actions
+                  }
+                }}
+              />
+            </Form.Group>
+
             {/* Ticket type selection for each seat */}
             {[...Array(selectedSpots)].map((_, index) => (
               <Form.Group key={index} controlId={`ticketType-${index + 1}`}>
@@ -449,18 +597,16 @@ return (
                   <span className="mr-2">{`Price: $${ticketPrices[selectedTicketTypes[index]]}`}</span>
                   {/* Dropdown for selecting ticket type */}
                   <Form.Control
-				  as="select"
-				  value={selectedTicketTypes[index]}
-				  onChange={(e) => handleTicketTypeChange(e.target.value, index)}
-				>
-				  <option value="select">Select</option>
-				  <option value="standard">Standard ($100)</option>
-				  <option value="VIP">VIP ($120)</option>
-				  <option value="student">Student ($85)</option>
-				  <option value="kids">Kids ($60)</option>
-				</Form.Control>
-                  
-
+                    as="select"
+                    value={selectedTicketTypes[index]}
+                    onChange={(e) => handleTicketTypeChange(e.target.value, index)}
+                  >
+                    <option value="select">Select</option>
+                    <option value="standard">Standard ($100)</option>
+                    <option value="VIP">VIP ($120)</option>
+                    <option value="student">Student ($85)</option>
+                    <option value="kids">Kids ($60)</option>
+                  </Form.Control>
                 </div>
               </Form.Group>
             ))}
@@ -479,29 +625,41 @@ return (
         {/* <div id="paypal-button-container"></div> */}
       </Modal.Body>
       {/* Modal footer */}
-<Modal.Footer>
-  {/* Close button */}
-  <button type="button" className="btn btn-secondary" onClick={() => {
-    resetState(); // Reset all state variables
-    setShowModal(false);
-  }}>
-    Close
-  </button>
-  {/* Purchase button */}
-  <Button variant="success" onClick={handleCloseModal}>
-    Purchase
-  </Button>
-  {/* Countdown timer */}
-  <div className="countdown-timer">Time Remaining: {Math.floor(remainingTime / 60)}:{(remainingTime % 60).toString().padStart(2, '0')}</div>
-</Modal.Footer>
-
-
-
+      <Modal.Footer>
+        {/* Close button */}
+        <button type="button" className="btn btn-secondary" onClick={() => { resetState(); setShowModal(false); }}>
+          Close
+        </button>
+        {/* Purchase button */}
+        <Button variant="success" onClick={handleCloseModal}>
+          Add to CART
+        </Button>
+        {/* Countdown timer */}
+        <div className="countdown-timer">Time Remaining: {Math.floor(remainingTime / 60)}:{(remainingTime % 60).toString().padStart(2, '0')}</div>
+      </Modal.Footer>
     </Modal>
-    {/* Additional container for PayPal button */}
-    <div className="rectangle-layout">
-      <div id="paypal-button-container"></div>
-    </div>
+
+<Modal show={showSuccessModal} onHide={handleCloseSuccessModal}>
+  <Modal.Header closeButton>
+    <Modal.Title>Payment Successful!</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    {transactionDetails && (
+      <>
+        <p>Transaction completed by {transactionDetails.payer.name.given_name}</p>
+        <p>Transaction ID: {transactionDetails.id}</p>
+        {/* Add any additional information you want to display */}
+      </>
+    )}
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={handleCloseSuccessModal}>
+      Close
+    </Button>
+  </Modal.Footer>
+</Modal>
+
+
   </Container>
 );
 

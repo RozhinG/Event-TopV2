@@ -1,0 +1,9 @@
+// tablesData.json
+[
+  { "reservations": [], "capacity": 8 },
+  { "reservations": [], "capacity": 8 },
+  { "reservations": [], "capacity": 8 },
+  { "reservations": [], "capacity": 8 },
+  { "reservations": [], "capacity": 8 },
+  // ... (add more tables as needed)
+]
