@@ -387,18 +387,18 @@ const handlePayPalPayment = () => {
     // Update purchased items state
     setPurchasedItems((prevItems) => [...prevItems, reservationData]);
 
+    const paypalClientId = process.env.CLIENT_ID;
+
+	  if (!paypalClientId) {
+		console.error('PayPal client ID is not defined in the .env file.');
+		return null;
+	  }
+
     // Use PayPal SDK to handle payment
     const paypalScript = document.createElement('script');
-    //paypalScript.src = `https://www.paypal.com/sdk/js?client-id=ATMvY5-1N5sOTVS4mXgjwGSUMnOQD1kjhTClWHpSe95szpUh8rTY-2vWjTDNlrEiAotYpyyR__h2Hcm9&currency=CAD&locale=en_ca`;
-
-
-  // AYSpzj2tY_WJ6Pw5WCGRX9AnrSoX2Es12cxXyWVVZkASit6zo4LfqGiYIIQoi1ChsWmcpN7UKl4In1Ig --> working sandbox
-  // ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW
-  paypalScript.src = `https://www.paypal.com/sdk/js?client-id=AYSpzj2tY_WJ6Pw5WCGRX9AnrSoX2Es12cxXyWVVZkASit6zo4LfqGiYIIQoi1ChsWmcpN7UKl4In1Ig&buyer-country=CA&currency=CAD`;
-
-  // ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW --> working LIVE
-  //paypalScript.src = `https://www.paypal.com/sdk/js?client-id=ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW&currency=CAD`;
-  paypalScript.async = true;
+    paypalScript.src = `https://www.paypal.com/sdk/js?client-id=${paypalClientId}&buyer-country=CA&currency=CAD`;
+  
+    paypalScript.async = true;
   paypalScript.onload = () => {
     handlePayPalPayment();
   };
