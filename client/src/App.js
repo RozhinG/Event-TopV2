@@ -4,11 +4,24 @@ import { Container, Form, Button, Badge, Dropdown, Modal, Alert, Row, Col } from
 import './App.css';
 import PayPalButton from './PayPalButton';
 import PurchaseCart from './PurchaseCart';
+//import { useReactToPrint } from 'react-to-print';
+//import PrintableContent from './PrintableContent';
+import PrintView from './PrintView';
+//import ReactDOMServer from 'react-dom/server';
+
+// Import the image at the top of your component file
 
 //import ReactDOM from 'react-dom';
 import { calculateTotalWithFee } from './utils';
 
 function App() {
+	
+	
+	////// DECLARED CONSTANTS
+	////// DECLARED CONSTANTS
+	////// DECLARED CONSTANTS
+	////// DECLARED CONSTANTS
+
   const [tables, setTables] = useState(Array.from({ length: 30 }, () => ({ reservations: [], capacity: 8 })));
 
   //const [tables, setTables] = useState([]);
@@ -60,6 +73,8 @@ function App() {
   const handleCloseSuccessModal = () => setShowSuccessModal(false);
 
 
+	////// Erase all variables
+	////// Erase all variables
   const resetState = () => {
     setTables(Array.from({ length: 30 }, () => ({ reservations: [], capacity: 8 })));
     setReservationText('');
@@ -77,6 +92,8 @@ function App() {
     setNewTotalTicketPrice(0);
   };  
   
+	////// Ticket Prices
+	////// Ticket Prices
   const ticketPrices = {
     standard: 100,
     VIP: 120,
@@ -84,20 +101,11 @@ function App() {
     kids: 1,
   };
 
-  const handleCaptureDetails = (details) => {
-    // Handle the captured details as needed
-    console.log('Captured PayPal Details:', details);
-    setCapturedDetails(details);
-
-    // You can perform additional actions here, such as updating state or making API calls
-  };
-
-
 const handleTicketTypeChange = (type, index) => {
   const updatedTicketTypes = [...selectedTicketTypes];
   
   // Check if the selected table is in the specified range
-  const isVipTable = [1, 2, 3, 4, 5, 16, 17, 18, 19, 20].includes(selectedTable);
+  const isVipTable = [1, 2, 3, 4, 16, 17, 18, 19].includes(selectedTable);
 
   // If the selected table is a VIP table, force the ticket type to be VIP
   if (isVipTable && type !== 'VIP') {
@@ -147,10 +155,6 @@ const handleAddReservation = () => {
     setShowTicketFields(true);
 };
 
-
-  
-  
-  
 
   //const handleStoreData = async () => {
     //setShowModal(false);
@@ -262,77 +266,12 @@ const handleAddReservation = () => {
     //setTotalTicketPrice(0);
     //clearTimeout(purchaseTimeout);
   //};
-  
-  
-  
 
 
-const handleCloseModal = async () => {
-  setShowModal(false);
-  setShowTicketFields(false);
-
-  const buyerName = document.getElementById('buyerName').value;
-  const buyerSurname = document.getElementById('buyerSurname').value;
-
-  if (!buyerName || !buyerSurname) {
-    alert('Please enter both name and surname.');
-    return;
-  }
-
-    // Store reservation data in state
-    const reservationData = {
-      tableNumber: selectedTable,
-      reservationText: reservationText,
-      buyerName: buyerName,
-      buyerSurname: buyerSurname,
-      ticketTypes: selectedTicketTypes,
-      totalTicketPrice: totalTicketPrice,
-    };
-
-
-    // Update purchased items state
-    setPurchasedItems((prevItems) => [...prevItems, reservationData]);
-
-  // Use PayPal SDK to handle payment
-  const paypalScript = document.createElement('script');
-  //paypalScript.src = `https://www.paypal.com/sdk/js?client-id=ATMvY5-1N5sOTVS4mXgjwGSUMnOQD1kjhTClWHpSe95szpUh8rTY-2vWjTDNlrEiAotYpyyR__h2Hcm9&currency=CAD&locale=en_ca`;
-
-
-  // AYSpzj2tY_WJ6Pw5WCGRX9AnrSoX2Es12cxXyWVVZkASit6zo4LfqGiYIIQoi1ChsWmcpN7UKl4In1Ig --> working sandbox
-  //paypalScript.src = `https://www.paypal.com/sdk/js?client-id=ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW&buyer-country=CA&currency=CAD`;
-
-  // ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW --> not working LIVE
-  paypalScript.src = `https://www.paypal.com/sdk/js?client-id=ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW&currency=CAD`;
-  paypalScript.async = true;
-  paypalScript.onload = () => {
-    handlePayPalPayment();
-  };
-	paypalScript.onerror = () => {
-	  console.error('Error loading PayPal SDK');
-	  // You can add more detailed error handling here
-	};
-  document.body.appendChild(paypalScript);
+  // Payment Gateway by Paypal
+  // Payment Gateway by Paypal
+  // Payment Gateway by Paypal
     
-  setReservationText('');
-  setSelectedSpots(1);
-  setSelectedTicketTypes(Array(selectedSpots).fill('standard'));
-  setTotalTicketPrice(0);
-  clearTimeout(purchaseTimeout);
-};
-
-
-const handleCloseModalTimeOut = async () => {
-  setShowModal(false);
-  setShowTicketFields(false);
-
-  clearTimeout(purchaseTimeout);
-};
-
-const handlePrintPurchaseCart = () => {
-  window.print();
-};
-
-
 const handlePayPalPayment = () => {
   // Replace 'YOUR_CLIENT_ID' with your PayPal client ID
   window.paypal
@@ -381,17 +320,6 @@ const handlePayPalPayment = () => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
   const calculateTableColor = (table) => {
     if (table.capacity === 0) {
       return 'table-full';
@@ -418,6 +346,96 @@ const handlePayPalPayment = () => {
 //}
 
 // ... (previous code)
+
+
+
+  const handleCaptureDetails = (details) => {
+    // Handle the captured details as needed
+    console.log('Captured PayPal Details:', details);
+    setCapturedDetails(details);
+
+    // You can perform additional actions here, such as updating state or making API calls
+  };
+   
+  const handleCloseModal = async () => {
+    setShowModal(false);
+    setShowTicketFields(false);
+
+     const buyerName = document.getElementById('buyerName').value;
+     const buyerSurname = document.getElementById('buyerSurname').value;
+
+	 if (!buyerName || !buyerSurname) {
+		alert('Please enter both name and surname.');
+		return;
+	 }
+
+    // Store reservation data in state
+	const reservationData = {
+	  tableNumber: selectedTable,
+	  reservationText: reservationText,
+	  buyerName: buyerName,
+	  buyerSurname: buyerSurname,
+	  customerEmail: buyerEmail, // Add customer email
+	  selectedSpots: selectedSpots, // Add number of seat spots
+	  ticketTypes: selectedTicketTypes,
+	  totalTicketPrice: totalTicketPrice,
+	};
+
+    // Store reservation data in state or local storage
+    setCapturedDetails(reservationData);
+  
+    // Update purchased items state
+    setPurchasedItems((prevItems) => [...prevItems, reservationData]);
+
+    // Use PayPal SDK to handle payment
+    const paypalScript = document.createElement('script');
+    //paypalScript.src = `https://www.paypal.com/sdk/js?client-id=ATMvY5-1N5sOTVS4mXgjwGSUMnOQD1kjhTClWHpSe95szpUh8rTY-2vWjTDNlrEiAotYpyyR__h2Hcm9&currency=CAD&locale=en_ca`;
+
+
+  // AYSpzj2tY_WJ6Pw5WCGRX9AnrSoX2Es12cxXyWVVZkASit6zo4LfqGiYIIQoi1ChsWmcpN7UKl4In1Ig --> working sandbox
+  // ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW
+  paypalScript.src = `https://www.paypal.com/sdk/js?client-id=AYSpzj2tY_WJ6Pw5WCGRX9AnrSoX2Es12cxXyWVVZkASit6zo4LfqGiYIIQoi1ChsWmcpN7UKl4In1Ig&buyer-country=CA&currency=CAD`;
+
+  // ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW --> working LIVE
+  //paypalScript.src = `https://www.paypal.com/sdk/js?client-id=ASD882dz83tzc9b0hWysakdf_2UvhQhoXhoSIHeeTDDkAoyl5vCAqYmY7Tq2cQS_J7zm1H8FWDvUGdIW&currency=CAD`;
+  paypalScript.async = true;
+  paypalScript.onload = () => {
+    handlePayPalPayment();
+  };
+	paypalScript.onerror = () => {
+	  console.error('Error loading PayPal SDK');
+	  // You can add more detailed error handling here
+	};
+  document.body.appendChild(paypalScript);
+    
+  setReservationText('');
+  setSelectedSpots(1);
+  setSelectedTicketTypes(Array(selectedSpots).fill('standard'));
+  setTotalTicketPrice(0);
+  clearTimeout(purchaseTimeout);
+};
+
+
+const handleCloseModalTimeOut = async () => {
+  setShowModal(false);
+  setShowTicketFields(false);
+
+  clearTimeout(purchaseTimeout);
+};
+
+const handlePrintPurchaseCart = () => {
+  window.print();
+};
+
+const handlePrintTicket = () => {
+  window.print();
+};
+
+
+
+
+
+
 
 useEffect(() => {
 
@@ -455,29 +473,88 @@ useEffect(() => {
 
 
 
+//const printPaymentSuccessfulView = () => {
+  //if (transactionDetails && capturedDetails) {
+    //const printContent = (
+      //<div>
+        //<h3>Ticket Top!</h3>
+        //<h5>Event Name: Novruz Gala</h5>
+        //<p>Transaction completed by {transactionDetails.payer.name.given_name} {transactionDetails.payer.name.surname}</p>
+        //<p>Transaction ID: {transactionDetails.id}</p>
+        //{capturedDetails.tableNumber && <p>Table Number: {capturedDetails.tableNumber}</p>}
+        //{capturedDetails.selectedSpots && <p>Number of Seats: {capturedDetails.selectedSpots}</p>}
+        //<p>Ticket Types: {capturedDetails.ticketTypes && capturedDetails.ticketTypes.join(', ')}</p>
+        //<p>Paid Amount: {transactionDetails.purchase_units[0].amount.value}</p>
+        //<p>Purchase Date and Time: {new Date(transactionDetails.create_time).toLocaleString()}</p>
+        //{/* Add any additional information you want to display */}
+        //<p>Your ticket has been sent to your email ({capturedDetails.customerEmail})!</p>
+      //</div>
+    //);
+
+    //// Convert the React JSX content to HTML
+    //const printHTML = ReactDOMServer.renderToStaticMarkup(printContent);
+
+    //// Create a new window for printing
+    //const printWindow = window.open('', '_blank');
+
+    //// Write the HTML content to the body of the new window
+    //printWindow.document.body.innerHTML = printHTML;
+
+    //// Print the content
+    //printWindow.print();
+    //printWindow.close();
+  //} else {
+    //// Handle the case when transactionDetails or capturedDetails are not available
+    //console.error('Transaction details or captured details not available.');
+  //}
+//};
+
+
+  const printPaymentSuccessfulView = () => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write('<html><head><title>Payment Successful</title></head><body>');
+
+    // Render the PrintView component inside the new window
+    const printContent = <PrintView transactionDetails={transactionDetails} capturedDetails={capturedDetails} />;
+    printWindow.document.write(printContent ? printContent.outerHTML : '');
+
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+
+    // Wait for the content to be loaded before printing
+    printWindow.onload = () => {
+      printWindow.print();
+    };
+  };
+
+
+
 
 return (
   <Container className="mt-3">
 
+  {/* FIRST ROW OF TICKET STORE */}
   <div class="row d-flex justify-content-cente">
-
     {/* PURCHASE CART */}
-	  <div class="row d-flex justify-content-cente">
+	  <div class="row d-flex justify-content-cente mt-4">
 		{/* Other components and content */}
+        
+        <h4 className="mb-3">Purchase Cart Details</h4>
 		{purchasedItems.length > 0 && <PurchaseCart purchasedItems={purchasedItems} />}
 		{/* Other components and content */}
 		<button onClick={handlePrintPurchaseCart}>Print Purchase Cart</button>
 	  </div>
-	  
   </div>
 
+  {/* SECOND ROW OF TICKET STORE - TWO COLUMNS */}
   <div class="row">
+    
     <div class="col-6">
     
     <Form>
         {/* Select Table section */}
         <div className="select-table-section">
-          <h5 className="mb-3">Select Table:</h5>
+          <h5 className="mb-1 mt-4">Select Table:</h5>
           <Dropdown>
             <Dropdown.Toggle variant="primary" id="dropdown-basic">
               Table {selectedTable}
@@ -493,7 +570,7 @@ return (
         </div>
         {/* Enter number of seats section */}
         <div className="enter-seats-section">
-          <h5 className="w-75 mb-3 ">Enter number of seats:</h5>
+          <h5 className="w-75 mb-1 mt-4">Enter number of seats:</h5>
           <Form.Group controlId="selectedSpots">
             <Form.Control
               type="number"
@@ -514,12 +591,12 @@ return (
 
       {/* Task list */}
       {/* Task list */}
-      {/* Task list */}
+      {/* Task list */}{/* 
     <Row className="task-list">
       {tables.map((table, tableIndex) => (
         <Col key={tableIndex} xs={12} sm={6} md={4} lg={3} className={`circle-button task-item ${calculateTableColor(table)}`}>
           <div className="table-info">
-            <strong>{[1, 2, 3, 4, 5, 16, 17, 18, 19, 20].includes(tableIndex + 1) ? `VIP Table ${tableIndex + 1}` : `Table ${tableIndex + 1}`}</strong>
+            <strong>{[1, 2, 3, 4, 5, 16, 17, 18, 19, 20].includes(tableIndex + 1) ? `VIP ${tableIndex + 1}` : `${tableIndex + 1}`}</strong>
             <span>({table.capacity} seats)</span>
           </div>
           <div className="reservation-info">
@@ -532,23 +609,25 @@ return (
         </Col>
       ))}
     </Row>
+    */}
     
     
     </div>
     <div class="col-6">
 
-
+		{/* container for PayPal button */}
+		{/* container for PayPal button */}
+		{/* container for PayPal button */}
+		<h5 className="w-75 mb-1 mt-4">Select a payment method:</h5>
+		<div id="paypal-button-container"></div>
     
-
-    {/* Additional container for PayPal button */}
-    <div id="paypal-button-container"></div>
-    
-    
-        
     </div>
   </div>
 
 
+
+    {/* Reservation modal */}
+    {/* Reservation modal */}
     {/* Reservation modal */}
     <Modal show={showModal} onHide={handleCloseModal} dialogClassName="custom-modal">
       <Modal.Header closeButton>
@@ -561,8 +640,11 @@ return (
         {showTicketFields && (
           <Form>
             {/* Alert */}
-            <Alert variant="warning">Note: Tickets are non-refundable.</Alert>
-            <Alert variant="warning">Note: All fields must be completed.</Alert>
+			<Alert variant="warning">
+			  Note: Tickets are non-refundable.
+			  <br />
+			  Note: All fields must be completed.
+			</Alert>
             {/* Buyer's name input */}
             <Form.Group controlId="buyerName">
               <Form.Label>Name</Form.Label>
@@ -626,6 +708,11 @@ return (
             </div>
           </Form>
         )}
+            {/* Alert */}
+			<Alert variant="warning">
+			  By clicking the Add to CART button, I acknowledge that I have read and agreed with the Ticket Top sales and terms of use.
+			</Alert>
+
         {/* PayPal button container */}
         {/* <div id="paypal-button-container"></div> */}
       </Modal.Body>
@@ -649,15 +736,37 @@ return (
     <Modal.Title>Payment Successful!</Modal.Title>
   </Modal.Header>
   <Modal.Body>
-    {transactionDetails && (
-      <>
-        <p>Transaction completed by {transactionDetails.payer.name.given_name}</p>
-        <p>Transaction ID: {transactionDetails.id}</p>
-        {/* Add any additional information you want to display */}
-      </>
-    )}
+{transactionDetails && capturedDetails && (
+  <>
+  <div className="ticket-top-header">
+    <img src="images/Ticket-Top-Barcode1.png" alt="Ticket Top Logo" className="ticket-top-logo" />
+    <div className="ticket-top-content">
+      <h3>Ticket Top!</h3>
+      <h5>Event Name: Novruz Gala</h5>
+      <p>Transaction completed by {transactionDetails.payer.name.given_name} {transactionDetails.payer.name.surname}</p>
+      <p>Transaction ID: {transactionDetails.id}</p>
+      {capturedDetails.tableNumber && <p>Table Number: {capturedDetails.tableNumber}</p>}
+      {capturedDetails.selectedSpots && <p>Number of Seats: {capturedDetails.selectedSpots}</p>}
+      <p>Ticket Types: {capturedDetails.ticketTypes && capturedDetails.ticketTypes.join(', ')}</p>
+      <p>Paid Amount: {transactionDetails.purchase_units[0].amount.value}</p>
+      <p>Purchase Date and Time: {new Date(transactionDetails.create_time).toLocaleString()}</p>
+      <img src="images/Ticket-Top-Barcode2.png" alt="" className="ticket-top-logo" />
+      {/* Add any additional information you want to display */}
+      <p></p>
+      <p>Your ticket has been sent to your email ({capturedDetails.customerEmail})!</p>
+    </div>
+  </div>
+  </>
+)}
   </Modal.Body>
   <Modal.Footer>
+    {/* Add any additional information you want to display 
+    <Button variant="secondary" onClick={handlePrintTicket}>
+    <Button variant="secondary" onClick={printPaymentSuccessfulView}>
+    */}
+    <Button variant="primary" onClick={handlePrintTicket}>
+      Print Ticket
+    </Button>
     <Button variant="secondary" onClick={handleCloseSuccessModal}>
       Close
     </Button>
