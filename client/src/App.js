@@ -390,21 +390,17 @@ const handlePayPalPayment = () => {
     // Update purchased items state
     setPurchasedItems((prevItems) => [...prevItems, reservationData]);
 
-    //const CLIENT_ID = process.env.CLIENT_ID;
-    //const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PORT } = process.env;
+    const cl_id = process.env.REACT_APP_PAYPAL_CLIENT_ID;
 
-    const cl_id = process.env.CLIENT_ID;
-
-	  //if (!cl_id) {
+	  if (!cl_id) {
 		//console.log('PayPal CL ID is not defined in the .env file.',cl_id);
-        //sconsole.log('Client ID:', cl_id);
-		//return null;
-	 // }
+        console.log('Client ID is not defined:', cl_id);
+		return null;
+	  }
 
     // Use PayPal SDK to handle payment
     const paypalScript = document.createElement('script');
-    paypalScript.src = `https://www.paypal.com/sdk/js?client-id=AYSpzj2tY_WJ6Pw5WCGRX9AnrSoX2Es12cxXyWVVZkASit6zo4LfqGiYIIQoi1ChsWmcpN7UKl4In1Ig&buyer-country=CA&currency=CAD`;
-    //paypalScript.src = `https://www.paypal.com/sdk/js?client-id=${process.env.REACT_APP_PAYPAL_CLIENT_ID}&buyer-country=CA&currency=CAD`;
+    paypalScript.src = `https://www.paypal.com/sdk/js?client-id=${process.env.REACT_APP_PAYPAL_CLIENT_ID}&buyer-country=CA&currency=CAD`;
 
     paypalScript.async = true;
   paypalScript.onload = () => {
